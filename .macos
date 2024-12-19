@@ -33,12 +33,17 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 
 echo “installing oh-my-zsh”
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
  echo "brew installing stuff"
-brew install git node pnpm plantuml graphviz powerlevel10k  echo "node --version: $(node --version)"
+brew install git node pnpm plantuml graphviz powerlevel10k  echo
+
+"node --version: $(node --version)"
 echo "npm --version: $(npm --version)"
 
-echo "installing a few global npm packages"
-npm install --global  echo "installing apps with brew --cask"
+# echo "installing a few global npm packages"
+# npm install --global
+
+echo "installing apps with brew --cask"
 brew install --cask raycast google-chrome firefox github itsycal visual-studio-code discord chatgpt warp caffeine figma hiddenbar keka maccy 
 
 echo "Generating a new SSH key for GitHub"
@@ -172,9 +177,9 @@ defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
 
 # Set a custom wallpaper image. `DefaultDesktop.jpg` is already a symlink, and
 # all wallpapers are in `/Library/Desktop Pictures/`. The default is `Wave.jpg`.
-#rm -rf ~/Library/Application Support/Dock/desktoppicture.db
-#sudo rm -rf /System/Library/CoreServices/DefaultDesktop.jpg
-#sudo ln -s /path/to/your/image /System/Library/CoreServices/DefaultDesktop.jpg
+# rm -rf ~/Library/Application Support/Dock/desktoppicture.db
+# sudo rm -rf /System/Library/CoreServices/DefaultDesktop.jpg
+# sudo ln -s /path/to/your/image /System/Library/CoreServices/DefaultDesktop.jpg
 
 ###############################################################################
 # SSD-specific tweaks                                                         #
@@ -248,6 +253,7 @@ defaults write NSGlobalDomain InitialKeyRepeat -int 10
 
 # Stop iTunes from responding to the keyboard media keys
 # launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist 2> /dev/null 
+
 ###############################################################################
 # Screen                                                                      #
 ###############################################################################
@@ -294,7 +300,7 @@ defaults write com.apple.finder ShowMountedServersOnDesktop -bool false
 defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool false
 
 # Finder: show hidden files by default
-#defaults write com.apple.finder AppleShowAllFiles -bool true
+# defaults write com.apple.finder AppleShowAllFiles -bool true
 
 # Finder: show all filename extensions
 defaults write NSGlobalDomain AppleShowAllExtensions -bool true
@@ -386,6 +392,7 @@ defaults write com.apple.finder FXInfoPanesExpanded -dict \
   General -bool true \
   OpenWith -bool true \
   Privileges -bool true
+
  ###############################################################################
 # Dock, Dashboard, and hot corners                                            #
 ###############################################################################
@@ -694,8 +701,8 @@ defaults write com.apple.terminal StringEncodings -array 4
 
 # Enable “focus follows mouse” for Terminal.app and all X11 apps
 # i.e. hover over a window and start typing in it without clicking first
-#defaults write com.apple.terminal FocusFollowsMouse -bool true
-#defaults write org.x.X11 wm_ffm -bool true
+# defaults write com.apple.terminal FocusFollowsMouse -bool true
+# defaults write org.x.X11 wm_ffm -bool true
 
 # Enable Secure Keyboard Entry in Terminal.app
 # See: https://security.stackexchange.com/a/47786/8918
