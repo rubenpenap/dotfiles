@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# ohMyZsh
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="robbyrussell"
+
 export TERM=xterm-256color
 export CLICOLOR=1
 export LSCOLORS=Fafacxdxbxegedabagacad
@@ -36,6 +40,9 @@ PATH="$PATH:./node_modules/.bin:../node_modules/.bin:../../node_modules/.bin:../
 
 # Plugins
 plugins=(git)
+
+# Source ohMyZsh
+source $ZSH/oh-my-zsh.sh
 
 # Custom bins
 PATH="$PATH:$HOME/.bin:$HOME/.local/bin";
