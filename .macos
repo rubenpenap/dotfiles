@@ -31,9 +31,6 @@ echo "installing homebrew"
 echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/repp.dev/.zprofile
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
-echo “installing oh-my-zsh”
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-
 echo "brew installing stuff"
 brew install git node pnpm plantuml graphviz powerlevel10kecho
 
@@ -66,6 +63,9 @@ ln -s "${HOME}/dotfiles/.gitignore_global" "${HOME}/.gitignore_global"
 ln -s "${HOME}/dotfiles/.gitconfig" "${HOME}/.gitconfig"
 
 echo "source $(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme" >> ~/.zshrc
+
+echo “installing oh-my-zsh”
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 echo "making system modifications:"
 
