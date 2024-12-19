@@ -32,9 +32,9 @@ echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/repp.dev/.zprofile
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 echo "brew installing stuff"
-brew install git node pnpm plantuml graphviz powerlevel10kecho
+brew install git node pnpm plantuml graphviz powerlevel10k
 
-"node --version: $(node --version)"
+echo "node --version: $(node --version)"
 echo "npm --version: $(npm --version)"
 
 # echo "installing a few global npm packages"
