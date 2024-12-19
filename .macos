@@ -34,8 +34,8 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 echo “installing oh-my-zsh”
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
- echo "brew installing stuff"
-brew install git node pnpm plantuml graphviz powerlevel10k  echo
+echo "brew installing stuff"
+brew install git node pnpm plantuml graphviz powerlevel10kecho
 
 "node --version: $(node --version)"
 echo "npm --version: $(npm --version)"
@@ -44,10 +44,10 @@ echo "npm --version: $(npm --version)"
 # npm install --global
 
 echo "installing apps with brew --cask"
-brew install --cask raycast google-chrome firefox github itsycal visual-studio-code discord chatgpt warp caffeine figma hiddenbar keka maccy 
+brew install --cask raycast google-chrome firefox github itsycal visual-studio-code discord chatgpt warp caffeine figma hiddenbar keka maccy
 
 echo "Generating a new SSH key for GitHub"
-ssh-keygen -t ed25519 -C “rubenpenap@gmail.com" -f ~/.ssh/id_ed25519
+ssh-keygen -t ed25519 -C "rubenpenap@gmail.com" -f ~/.ssh/id_ed25519
 eval "$(ssh-agent -s)"
 touch ~/.ssh/config
 echo "Host *\n AddKeysToAgent yes\n UseKeychain yes\n IdentityFile ~/.ssh/id_ed25519" | tee ~/.ssh/config
@@ -252,7 +252,7 @@ defaults write NSGlobalDomain InitialKeyRepeat -int 10
 # sudo systemsetup -settimezone "Europe/Brussels" > /dev/null
 
 # Stop iTunes from responding to the keyboard media keys
-# launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist 2> /dev/null 
+# launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist 2> /dev/null
 
 ###############################################################################
 # Screen                                                                      #
@@ -393,7 +393,7 @@ defaults write com.apple.finder FXInfoPanesExpanded -dict \
   OpenWith -bool true \
   Privileges -bool true
 
- ###############################################################################
+###############################################################################
 # Dock, Dashboard, and hot corners                                            #
 ###############################################################################
 
