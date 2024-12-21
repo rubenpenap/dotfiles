@@ -63,6 +63,7 @@ alias zsh="code ~/.zshrc";
 alias reload="source ~/.zshrc";
 alias de="cd ~/Desktop && ls";
 alias co="cd ~/code && ls";
+alias gc='gc_func'
 alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
 alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
 alias deleteDSFiles="find . -name '.DS_Store' -type f -delete"
@@ -70,20 +71,28 @@ alias deleteDSFiles="find . -name '.DS_Store' -type f -delete"
 ## git aliases
 function ga () { ge && gl && gcam "$@" && gpsup; }
 function gu () { ge && gpsup; }
-function gc () {
+function gc_func () {
   if [ -z "$1" ]; then
     echo "Usage: gc <repository-url>"
     return 1
   fi
   cd ~/code || { echo "Failed to navigate to ~/code"; return 1; }
-  repo_name=$(basename "$1" .git)
+  repo_url="$1"
+  repo_name=$(basename "$repo_url" .git)
   if [ -d "$repo_name" ]; then
-    echo "Repository '$repo_name' already exists. Pulling latest changes..."
-    cd "$repo_name" || { echo "Failed to navigate to $repo_name"; return 1; }
-    git pull || { echo "Error during git pull"; return 1; }
+    if [ -d "$repo_name/.git" ]; then
+      echo "Repository '$repo_name' already exists. Pulling latest changes..."
+      cd "$repo_name" || { echo "Failed to navigate to $repo_name"; return 1; }
+      git pull || { echo "Error during git pull"; return 1; }
+    else
+      echo "Directory '$repo_name' exists but is not a Git repository."
+      echo "Please remove the directory or rename it."
+      return 1
+    fi
   else
     echo "Cloning repository..."
-    git clone "$@" || { echo "Error during git clone"; return 1; }
+    git clone "$repo_url" || { echo "Error during git clone"; return 1; }
+    cd "$repo_name" || { echo "Failed to navigate to $repo_name"; return 1; }
   fi
   echo "Operation completed successfully."
 }
