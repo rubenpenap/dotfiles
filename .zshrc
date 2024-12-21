@@ -63,12 +63,20 @@ alias zsh="code ~/.zshrc";
 alias reload="source ~/.zshrc";
 alias de="cd ~/Desktop && ls";
 alias co="cd ~/code && ls";
-alias gc='gc_func'
-alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
-alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
-alias deleteDSFiles="find . -name '.DS_Store' -type f -delete"
+alias gc="gc_func";
+alias dr="dr_func";
+alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app';
+alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app';
+alias deleteDSFiles="find . -name '.DS_Store' -type f -delete";
 
 ## git aliases
+function dr_func () {
+  repo_name=$(basename "$PWD")
+  cd ..
+  rm -rf $repo_name
+  echo "Deleted $repo_name"
+  l
+}
 function ga () { ge && gl && gcam "$@" && gpsup; }
 function gu () { ge && gpsup; }
 function gc_func () {
@@ -94,6 +102,8 @@ function gc_func () {
     git clone "$repo_url" || { echo "Error during git clone"; return 1; }
     cd "$repo_name" || { echo "Failed to navigate to $repo_name"; return 1; }
   fi
+  echo "Installing dependencies..."
+  i || { echo "Failed to install dependencies"; return 1; }
   echo "Operation completed successfully."
 }
 function dev () {
