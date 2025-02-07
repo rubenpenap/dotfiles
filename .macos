@@ -50,7 +50,7 @@ curl -L -o ~/Library/Fonts/MesloLGS_NF_Bold_Italic.ttf "https://github.com/romka
 # npm install --global
 
 echo "installing apps with brew --cask"
-brew install --cask raycast google-chrome firefox github itsycal visual-studio-code discord chatgpt warp figma hiddenbar keka maccy whatsapp keepingyouawake microsoft-teams steam
+brew install --cask raycast google-chrome firefox github itsycal visual-studio-code discord chatgpt warp figma hiddenbar keka maccy whatsapp keepingyouawake microsoft-teams steam zoom
 
 echo "Generating a new SSH key for GitHub"
 ssh-keygen -t ed25519 -C "46791460+rubenpenap@users.noreply.github.com" -f ~/.ssh/id_ed25519
