@@ -47,7 +47,7 @@ curl -L -o ~/Library/Fonts/MesloLGS_NF_Italic.ttf "https://github.com/romkatv/po
 curl -L -o ~/Library/Fonts/MesloLGS_NF_Bold_Italic.ttf "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf"
 
 # echo "installing a few global npm packages"
-# npm install --global
+npm install --global typescript
 
 echo "installing apps with brew --cask"
 brew install --cask raycast google-chrome firefox github itsycal visual-studio-code discord chatgpt warp figma hiddenbar keka maccy whatsapp keepingyouawake microsoft-teams steam zoom
