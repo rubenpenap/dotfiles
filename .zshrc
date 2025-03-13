@@ -162,22 +162,32 @@ function quit () {
     done
   fi
 }
+
 function up () {
   echo "Updating Homebrew..."
   if ! brew update; then
     echo "Error during brew update"
     return 1
   fi
-  echo "Upgrading packages..."
+
+  echo "Upgrading formulae..."
   if ! brew upgrade; then
     echo "Error during brew upgrade"
     return 1
   fi
+
+  echo "Upgrading casks..."
+  if ! brew upgrade --cask; then
+    echo "Error during brew cask upgrade"
+    return 1
+  fi
+
   echo "Cleaning up..."
   if ! brew cleanup; then
     echo "Error during brew cleanup"
     return 1
   fi
+
   echo "All done!"
 }
 
