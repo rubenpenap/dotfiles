@@ -13,7 +13,11 @@ osascript -e 'tell application "System Preferences" to quit'
 sudo -v
 
 # Keep-alive: update existing `sudo` time stamp until `.macos` has finished
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+while true; do
+  sudo -n true
+  sleep 60
+  kill -0 "$$" || exit
+done 2>/dev/null &
 
 ###############################################################################
 # repp.dev’s Customizations                                                   #
@@ -28,7 +32,7 @@ echo "installing homebrew"
 # install homebrew https://brew.sh
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/repp.dev/.zprofile
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >>/Users/repp.dev/.zprofile
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 echo "brew installing stuff"
@@ -50,7 +54,7 @@ curl -L -o ~/Library/Fonts/MesloLGS_NF_Bold_Italic.ttf "https://github.com/romka
 pnpm add -g typescript
 
 echo "installing apps with brew --cask"
-brew install --cask raycast google-chrome firefox github itsycal visual-studio-code cursor discord chatgpt warp figma hiddenbar keka maccy whatsapp keepingyouawake microsoft-teams steam zoom dash workflowy linear-linear loom
+brew install --cask caffeine chatgpt cursor dash discord figma raycast firefox github google-chrome hiddenbar itsycal keepingyouawake keka linear-linear loom maccy microsoft-auto-update microsoft-teams steam visual-studio-code warp whatsapp workflowy zoom
 
 # Don't forget to install Flow AI
 
@@ -58,7 +62,7 @@ echo "Generating a new SSH key for GitHub"
 ssh-keygen -t ed25519 -C "46791460+rubenpenap@users.noreply.github.com" -f ~/.ssh/id_ed25519
 eval "$(ssh-agent -s)"
 touch ~/.ssh/config
-cat << EOF > ~/.ssh/config
+cat <<EOF >~/.ssh/config
 Host *
   AddKeysToAgent yes
   UseKeychain yes
@@ -75,7 +79,7 @@ echo “installing oh-my-zsh”
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 rm ~/.zshrc
 ln -s "${HOME}/dotfiles/.zshrc" "${HOME}/.zshrc"
-echo "source $(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme" >> ~/.zshrc
+echo "source $(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme" >>~/.zshrc
 
 echo "making system modifications:"
 
@@ -667,11 +671,11 @@ defaults write com.apple.spotlight orderedItems -array \
   '{"enabled" = 0;"name" = "MENU_WEBSEARCH";}' \
   '{"enabled" = 0;"name" = "MENU_SPOTLIGHT_SUGGESTIONS";}'
 # Load new settings before rebuilding the index
-killall mds > /dev/null 2>&1
+killall mds >/dev/null 2>&1
 # Make sure indexing is enabled for the main volume
-sudo mdutil -i on / > /dev/null
+sudo mdutil -i on / >/dev/null
 # Rebuild the index from scratch
-sudo mdutil -E / > /dev/null
+sudo mdutil -E / >/dev/null
 
 ###############################################################################
 # Terminal & iTerm 2                                                          #
@@ -873,7 +877,7 @@ for app in "Activity Monitor" \
   "Safari" \
   "SystemUIServer" \
   "iCal"; do
-  killall "${app}" &> /dev/null
+  killall "${app}" &>/dev/null
 done
 echo "Done. Note that some of these changes require a logout/restart to take effect."
 
