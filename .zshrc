@@ -164,12 +164,8 @@ function quit () {
 }
 
 function generatePassword() {
-  local venv_path=".venv/bin/activate"
-  local script_path="./gp.py"
-  local current_dir=$(pwd)
-
-  # Navegamos al directorio de este script
-  cd
+  local venv_path="~/.venv/bin/activate"
+  local script_path="~/./gp.py"
 
   if [[ ! -f "$venv_path" ]]; then
     echo "Error: No se encontró el entorno virtual en $venv_path"
@@ -189,8 +185,6 @@ function generatePassword() {
 
   # Desactivar entorno virtual
   deactivate
-
-  cd "$current_dir"
 }
 
 function up () {
