@@ -163,9 +163,27 @@ function quit () {
   fi
 }
 
-function generatePassword () {
-  source .venv/bin/activate
-  ./gp.py "$1"
+function generatePassword() {
+  local venv_path=".venv/bin/activate"
+  local script_path="./gp.py"
+
+  if [[ ! -f "$venv_path" ]]; then
+    echo "Error: No se encontró el entorno virtual en $venv_path"
+    return 1
+  fi
+
+  if [[ ! -f "$script_path" ]]; then
+    echo "Error: No se encontró el script $script_path"
+    return 1
+  fi
+
+  # Activar entorno virtual
+  source "$venv_path"
+
+  # Ejecutar script
+  python "$script_path" "$1"
+
+  # Desactivar entorno virtual
   deactivate
 }
 
