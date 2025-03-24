@@ -168,7 +168,7 @@ function generatePassword() {
   local script_path="./gp.py"
   local current_dir=$(pwd)
 
-  cd ~/ && pwd
+  cd ~/
 
   if [[ ! -f "$venv_path" ]]; then
     echo "Error: No se encontró el entorno virtual en $venv_path"
@@ -183,12 +183,12 @@ function generatePassword() {
   # Activar entorno virtual
   source "$venv_path"
 
-  # Ejecutar script
-  if [[ -f "$1" ]]; then
-		python "$script_path" "$1"
-	else
-		python "$script_path"
-	fi
+  # Ejecutar script con o sin flag
+  if [[ "$1" == "-s" || "$1" == "--special" ]]; then
+    python "$script_path" "$1"
+  else
+    python "$script_path"
+  fi
 
   # Desactivar entorno virtual
   deactivate
