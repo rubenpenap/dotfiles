@@ -184,7 +184,11 @@ function generatePassword() {
   source "$venv_path"
 
   # Ejecutar script
-  python "$script_path" "$1"
+  if [[ -f "$1" ]]; then
+		python "$script_path" "$1"
+	else
+		python "$script_path"
+	fi
 
   # Desactivar entorno virtual
   deactivate
