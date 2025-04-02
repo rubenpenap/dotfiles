@@ -142,8 +142,8 @@ function i () {
     echo "Installing dependencies..."
     pnpm install || { echo "Failed to install dependencies"; return 1; }
   fi
-  echo "Opening project in VS Code..."
-  code . || { echo "Failed to open project in VS Code"; return 1; }
+  echo "Opening project in Cursor..."
+  cursor . || { echo "Failed to open project in VS Code"; return 1; }
   echo "Starting the dev server..."
   dev || { echo "Failed to start the dev server"; return 1; }
   echo "Project setup complete."
