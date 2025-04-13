@@ -59,7 +59,7 @@ SCARF_ANALYTICS=false
 
 # Custom Aliases
 alias pg="echo 'Pinging Google' && ping www.google.com";
-alias zsh="code ~/.zshrc";
+alias zsh="cursor ~/.zshrc";
 alias reload="source ~/.zshrc";
 alias de="cd ~/Desktop && ls";
 alias co="cd ~/code && ls";
