@@ -68,7 +68,7 @@ alias dr="dr_func";
 alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app';
 alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app';
 alias deleteDSFiles="find . -name '.DS_Store' -type f -delete";
-alias gpass="generatePassword";
+alias pgen="passwordGenerator";
 ## git aliases
 function dr_func () {
   repo_name=$(basename "$PWD")
@@ -163,7 +163,7 @@ function quit () {
   fi
 }
 
-function generatePassword() {
+function passwordGenerator() {
   local venv_path=".venv/bin/activate"
   local script_path="./gp.py"
   local current_dir=$(pwd)
