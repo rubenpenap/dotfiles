@@ -301,10 +301,25 @@ function gcc_func() {
 	run_step() {
 		# $1=idx $2..=comando
 		local idx="$1"; shift
-		( eval "$@" ) >/dev/null 2>&1 &
-		local pid=$!
-		spin_until_done "$idx" "$pid"
-		local st=$?
+		
+		# Para comandos git que requieren SSH, ejecutar en foreground
+		if [[ "$*" == *"git clone"* || "$*" == *"git push"* || "$*" == *"git remote"* ]]; then
+			S_EMO[idx]="${SPIN_FRAMES[1]}"
+			render
+			local st
+			if eval "$@"; then
+				st=0
+			else
+				st=$?
+			fi
+		else
+			# Para otros comandos, usar background con redirección
+			( eval "$@" ) >/dev/null 2>&1 &
+			local pid=$!
+			spin_until_done "$idx" "$pid"
+			local st=$?
+		fi
+		
 		if (( st == 0 )); then
 			S_EMO[idx]="$EMO_OK"; render
 			return 0
@@ -407,22 +422,7 @@ EOF
 	render
 
 	# 10) commit/push
-	(
-		git add -A || true
-		if git diff --cached --quiet; then
-			exit 0
-		else
-			git commit -m 'Config' || true
-			git push -u origin main || {
-				local CUR_BRANCH; CUR_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-				[[ "$CUR_BRANCH" == "main" ]] || git branch -M main || true
-				git push -u origin main || true
-			}
-		fi
-	) &
-	spin_until_done 10 $!
-	(( $? == 0 )) && S_EMO[10]="$EMO_OK" || { S_EMO[10]="$EMO_ERR"; render; echo "Fallo el push"; return 1; }
-	render
+	run_step 10 "git add -A && ( git diff --cached --quiet || ( git commit -m 'Config' && git push -u origin main ) || ( git branch -M main && git push -u origin main ) )" || return $?
 
 	# 11) Cursor (best-effort)
 	( command -v cursor >/dev/null 2>&1 && cursor . ) >/dev/null 2>&1 &
