@@ -281,7 +281,7 @@ function gcc_func() {
 	for ((i=1; i<=${#S_LABELS[@]}; i++)); do S_EMO+="$EMO_WAIT"; done
 
 	render() {
-		clear
+		printf '\e[2J\e[H'
 		for i in {1..${#S_LABELS[@]}}; do
 			print -r -- "${S_EMO[i]} ${S_LABELS[i]}"
 		done
@@ -301,9 +301,9 @@ function gcc_func() {
 	run_step() {
 		# $1=idx $2..=comando
 		local idx="$1"; shift
-		
-		# Para comandos git que requieren SSH, ejecutar en foreground
-		if [[ "$*" == *"git clone"* || "$*" == *"git push"* || "$*" == *"git remote"* ]]; then
+
+		# Para comandos git que requieren SSH o cd, ejecutar en foreground
+		if [[ "$*" == *"git clone"* || "$*" == *"git push"* || "$*" == *"git remote"* || "$*" == "cd "* ]]; then
 			S_EMO[idx]="${SPIN_FRAMES[1]}"
 			render
 			local st
@@ -319,7 +319,7 @@ function gcc_func() {
 			spin_until_done "$idx" "$pid"
 			local st=$?
 		fi
-		
+
 		if (( st == 0 )); then
 			S_EMO[idx]="$EMO_OK"; render
 			return 0
