@@ -224,6 +224,213 @@ function up () {
   echo "All done!"
 }
 
+ccurso() {
+	set -euo pipefail
+
+	# ── Emojis/frames ────────────────────────────────────────────────────────
+	EMO_WAIT="🕗"   # en espera
+	EMO_OK="✅"     # listo
+	EMO_ERR="❌"    # falló
+	SPIN_FRAMES=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+
+	# ── Helpers ──────────────────────────────────────────────────────────────
+	require_cmd() { command -v "$1" >/dev/null 2>&1 || { echo "Falta '$1'"; exit 1; }; }
+
+	ask() {
+		local var_name="$1" prompt="$2" default="${3:-}"
+		local value="${!var_name:-}"
+		if [ -z "${value}" ]; then
+			if [ -n "$default" ]; then
+				read -r -p "$prompt [$default]: " value; value="${value:-$default}"
+			else
+				read -r -p "$prompt: " value
+			fi
+			eval "$var_name=\"\$value\""
+		fi
+	}
+
+	render() {
+		clear
+		for i in "${!S_LABELS[@]}"; do
+			printf "%s %s\n" "${S_EMO[$i]}" "${S_LABELS[$i]}"
+		done
+	}
+
+	mark_wait_all() { for i in "${!S_LABELS[@]}"; do S_EMO[$i]="$EMO_WAIT"; done; }
+
+	spin_until_done() {
+		# $1 = idx, $2 = pid
+		local idx="$1" pid="$2" frame=0
+		while kill -0 "$pid" >/dev/null 2>&1; do
+			S_EMO[$idx]="${SPIN_FRAMES[$frame]}"
+			render
+			frame=$(( (frame + 1) % ${#SPIN_FRAMES[@]} ))
+			sleep 0.09
+		done
+		wait "$pid"
+	}
+
+	run_step() {
+		# $1 = idx, $2.. = comando (string eval)
+		local idx="$1"; shift
+		# arrancar en background
+		( eval "$@" ) >/dev/null 2>&1 &
+		local pid=$!
+		spin_until_done "$idx" "$pid"
+		local status=$?
+		if [ $status -eq 0 ]; then
+			S_EMO[$idx]="$EMO_OK"; render
+		else
+			S_EMO[$idx]="$EMO_ERR"; render
+			echo; echo "Paso $((idx+1)) falló con: $*"
+			exit $status
+		fi
+	}
+
+	run_step_inline_ok() {
+		# para pasos triviales (sin comando), solo mostrar OK con refresh
+		local idx="$1"
+		S_EMO[$idx]="${SPIN_FRAMES[0]}"; render
+		sleep 0.15
+		S_EMO[$idx]="$EMO_OK"; render
+	}
+
+	# ── Inputs ───────────────────────────────────────────────────────────────
+	SRC_URL="${1-}"
+	REPO_DESC="${2-}"
+	COURSE_NAME="${3-}"
+	COURSE_URL="${4-}"
+
+	ask SRC_URL "URL del repo origen (SSH)" "git@github.com:epicweb-dev/advanced-mcp-features.git"
+	ask REPO_DESC "Descripción para el repo nuevo" "EpicAI Advanced MCP Features"
+	ask COURSE_NAME "Nombre del curso" "Advanced MCP Features"
+	ask COURSE_URL "URL del curso" "https://www.epicai.pro/workshops/day-3-4-advanced-mcp-features"
+
+	REPO_NAME="$(basename -s .git "$SRC_URL")"
+	CODE_DIR="${CODE_DIR:-"$HOME/code"}"
+	mkdir -p "$CODE_DIR"
+
+	require_cmd gh; require_cmd git; require_cmd sed; require_cmd npm
+
+	GH_USER="$(gh api user -q .login 2>/dev/null || true)"
+	[ -n "$GH_USER" ] || { echo "Autentícate primero: gh auth login"; exit 1; }
+	DEST_SSH="git@github.com:${GH_USER}/${REPO_NAME}.git"
+
+	# ── Plan (labels) ────────────────────────────────────────────────────────
+	S_LABELS=(
+		"📦 Creando repositorio en GitHub"
+		"📁 Navegando a carpeta code"
+		"🧬 Clonar repositorio"
+		"📂 Entrar al repo"
+		"⚙️  Setup (npm run setup)"
+		"🔗 Reapuntar remoto"
+		"🧹 Limpiar CI (.github)"
+		"📝 Ajustar .gitignore (/playground)"
+		"📚 Añadir aviso al README"
+		"📤 Push inicial a main"
+		"💻 Abrir en Cursor"
+		"🚀 Levantar dev"
+	)
+	declare -a S_EMO
+	mark_wait_all
+	render
+
+	# 0) Crear repo (idempotente)
+	if gh repo view "${GH_USER}/${REPO_NAME}" >/dev/null 2>&1; then
+		run_step_inline_ok 0
+	else
+		run_step 0 "gh repo create '${GH_USER}/${REPO_NAME}' --public --description \"${REPO_DESC}\""
+	fi
+
+	# 1) Navegar a code
+	run_step 1 "cd '$CODE_DIR'"
+
+	# 2) Clonar
+	if [ -d "$CODE_DIR/$REPO_NAME/.git" ]; then
+		run_step_inline_ok 2
+	else
+		run_step 2 "git clone '$SRC_URL' '$REPO_NAME'"
+	fi
+
+	# 3) Entrar
+	run_step 3 "cd '$CODE_DIR/$REPO_NAME'"
+
+	# 4) npm run setup (best-effort)
+	( npm run setup >/dev/null 2>&1 ) &
+	spin_until_done 4 $!
+	if [ $? -eq 0 ]; then S_EMO[4]="$EMO_OK"; else S_EMO[4]="$EMO_OK"; fi
+	render
+
+	# 5) Reapuntar remoto
+	run_step 5 "git remote set-url origin '$DEST_SSH' || git remote add origin '$DEST_SSH'"
+
+	# 6) Limpiar CI
+	run_step 6 "rm -rf .github || true"
+
+	# 7) Ajustar .gitignore
+	if [ -f ".gitignore" ]; then
+		run_step 7 "sed -i '' '/\/playground/d' .gitignore || true"
+	else
+		run_step_inline_ok 7
+	fi
+
+	# 8) Preprender aviso al README
+	(
+		TMP="$(mktemp)"
+		cat > "$TMP" <<EOF
+> ## 🚨 Important Notice
+>
+> This repository is a clone of the
+> [${COURSE_NAME}](${COURSE_URL})
+> by EpicAI. It has been published solely to document my GitHub activity
+> and for personal educational purposes.
+>
+> **Note:** This is not an official fork or a maintained derivative of the
+> original project.
+
+EOF
+		if [ -f README.md ]; then
+			cat "$TMP" README.md > "${TMP}.all" && mv "${TMP}.all" README.md
+		else
+			mv "$TMP" README.md
+		fi
+	) &
+	spin_until_done 8 $!
+	[ $? -eq 0 ] && S_EMO[8]="$EMO_OK" || S_EMO[8]="$EMO_ERR"; render
+	[ "${S_EMO[8]}" = "$EMO_ERR" ] && { echo; echo "Fallo al escribir README"; exit 1; }
+
+	# 9) Commit + push main
+	(
+		git add -A || true
+		if git diff --cached --quiet; then
+			exit 0
+		else
+			git commit -m 'Config' || true
+			git push -u origin main || {
+				CUR_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+				[ "$CUR_BRANCH" = "main" ] || git branch -M main || true
+				git push -u origin main || true
+			}
+		fi
+	) &
+	spin_until_done 9 $!
+	[ $? -eq 0 ] && S_EMO[9]="$EMO_OK" || S_EMO[9]="$EMO_ERR"; render
+	[ "${S_EMO[9]}" = "$EMO_ERR" ] && { echo; echo "Fallo el push"; exit 1; }
+
+	# 10) Abrir Cursor
+	( if command -v cursor >/dev/null 2>&1; then cursor .; fi ) >/dev/null 2>&1 &
+	spin_until_done 10 $!
+	S_EMO[10]="$EMO_OK"; render
+
+	# 11) Levantar dev (si existe script)
+	( if npm run -s | grep -qE ' dev$'; then npm run dev; fi ) >/dev/null 2>&1 &
+	spin_until_done 11 $!
+	S_EMO[11]="$EMO_OK"; render
+
+	echo
+	echo "Listo, pues. Repo: ${GH_USER}/${REPO_NAME}"
+}
+
 # zsh auto autocomplete
 autoload -Uz compinit && compinit
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
