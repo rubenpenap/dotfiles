@@ -225,96 +225,45 @@ function up () {
   echo "All done!"
 }
 
-gcc_func() {
-	# quitamos -e para no tumbar la shell; mantenemos -u/-o pipefail
-	set -uo pipefail
+# ----- helpers zsh-safe -----
+_cc_require_cmd() { command -v "$1" >/dev/null 2>&1 || { echo "Falta '$1'"; return 1; }; }
 
-	EMO_WAIT="🕗"   # en espera
-	EMO_OK="✅"     # listo
-	EMO_ERR="❌"    # falló
-	SPIN_FRAMES=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+# zsh: indirección segura (sin ${!var})
+_cc_getvar() {
+	# $1=nombre de variable → imprime su valor si existe
+	if [[ -n ${parameters[(I)$1]} ]]; then
+		print -r -- "${(P)1}"
+	else
+		print -r -- ""
+	fi
+}
 
-	require_cmd() { command -v "$1" >/dev/null 2>&1 || { echo "Falta '$1'"; return 1; }; }
-
-	ask() {
-		local var_name="$1" prompt="$2" default="${3:-}" value
-		value="${!var_name:-}"
-		if [ -z "${value}" ]; then
-			if [ -n "$default" ]; then
-				read -r -p "$prompt [$default]: " value; value="${value:-$default}"
-			else
-				read -r -p "$prompt: " value
-			fi
-			eval "$var_name=\"\$value\""
-		fi
-	}
-
-	render() {
-		clear
-		for i in "${!S_LABELS[@]}"; do
-			printf "%s %s\n" "${S_EMO[$i]}" "${S_LABELS[$i]}"
-		done
-	}
-
-	mark_wait_all() { for i in "${!S_LABELS[@]}"; do S_EMO[$i]="$EMO_WAIT"; done; }
-
-	spin_until_done() {
-		local idx="$1" pid="$2" frame=0
-		while kill -0 "$pid" >/dev/null 2>&1; do
-			S_EMO[$idx]="${SPIN_FRAMES[$frame]}"
-			render
-			frame=$(( (frame + 1) % ${#SPIN_FRAMES[@]} ))
-			sleep 0.09
-		done
-		wait "$pid"
-	}
-
-	run_step() {
-		local idx="$1"; shift
-		( eval "$@" ) >/dev/null 2>&1 &
-		local pid=$!
-		spin_until_done "$idx" "$pid"
-		local status=$?
-		if [ $status -eq 0 ]; then
-			S_EMO[$idx]="$EMO_OK"; render
+_cc_ask() {
+	# $1=var_name $2=prompt $3=default(opcional)
+	local __name="$1" __prompt="$2" __def="${3-}" __val
+	__val="$(_cc_getvar "$__name")"
+	if [[ -z "$__val" ]]; then
+		if [[ -n "$__def" ]]; then
+			read -r -p "$__prompt [$__def]: " __val
+			[[ -z "$__val" ]] && __val="$__def"
 		else
-			S_EMO[$idx]="$EMO_ERR"; render
-			echo; echo "Paso $((idx+1)) falló con: $*"
-			return $status
+			read -r -p "$__prompt: " __val
 		fi
-	}
+	fi
+	typeset -g "$__name=$__val"
+}
 
-	run_step_inline_ok() {
-		local idx="$1"
-		S_EMO[$idx]="${SPIN_FRAMES[0]}"; render
-		sleep 0.15
-		S_EMO[$idx]="$EMO_OK"; render
-	}
+# ----- comando principal -----
+function gcc_func() {
+	emulate -L zsh                     # aísla opciones; modo zsh puro
+	set -o pipefail                    # conserva errores en pipes
 
-	SRC_URL="${1-}"
-	REPO_DESC="${2-}"
-	COURSE_NAME="${3-}"
-	COURSE_URL="${4-}"
+	# Emojis y frames
+	local EMO_WAIT="🕗" EMO_OK="✅" EMO_ERR="❌"
+	local -a SPIN_FRAMES=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
 
-	ask SRC_URL "URL del repo origen (SSH)" "git@github.com:epicweb-dev/advanced-mcp-features.git"
-	ask REPO_DESC "Descripción para el repo nuevo" "EpicAI Advanced MCP Features"
-	ask COURSE_NAME "Nombre del curso" "Advanced MCP Features"
-	ask COURSE_URL "URL del curso" "https://www.epicai.pro/workshops/day-3-4-advanced-mcp-features"
-
-	REPO_NAME="$(basename -s .git "$SRC_URL")"
-	CODE_DIR="${CODE_DIR:-"$HOME/code"}"
-	mkdir -p "$CODE_DIR"
-
-	require_cmd gh || return 1
-	require_cmd git || return 1
-	require_cmd sed || return 1
-	require_cmd npm || return 1
-
-	GH_USER="$(gh api user -q .login 2>/dev/null || true)"
-	[ -n "$GH_USER" ] || { echo "Autentícate: gh auth login"; return 1; }
-	DEST_SSH="git@github.com:${GH_USER}/${REPO_NAME}.git"
-
-	S_LABELS=(
+	# Labels (orden de pasos)
+	local -a S_LABELS=(
 		"📦 Creando repositorio en GitHub"
 		"📁 Navegando a carpeta code"
 		"🧬 Clonar repositorio"
@@ -328,42 +277,114 @@ gcc_func() {
 		"💻 Abrir en Cursor"
 		"🚀 Levantar dev"
 	)
-	declare -a S_EMO
-	mark_wait_all
+	local -a S_EMO; S_EMO=()
+	for ((i=1; i<=${#S_LABELS[@]}; i++)); do S_EMO+="$EMO_WAIT"; done
+
+	render() {
+		clear
+		for i in {1..${#S_LABELS[@]}}; do
+			print -r -- "${S_EMO[i]} ${S_LABELS[i]}"
+		done
+	}
+
+	spin_until_done() {
+		local idx="$1" pid="$2" frame=1
+		while kill -0 "$pid" >/dev/null 2>&1; do
+			S_EMO[idx]="${SPIN_FRAMES[frame]}"
+			render
+			(( frame = frame % ${#SPIN_FRAMES[@]} + 1 ))
+			sleep 0.09
+		done
+		wait "$pid"
+	}
+
+	run_step() {
+		# $1=idx $2..=comando
+		local idx="$1"; shift
+		( eval "$@" ) >/dev/null 2>&1 &
+		local pid=$!
+		spin_until_done "$idx" "$pid"
+		local st=$?
+		if (( st == 0 )); then
+			S_EMO[idx]="$EMO_OK"; render
+			return 0
+		else
+			S_EMO[idx]="$EMO_ERR"; render
+			print -r -- ""
+			print -r -- "Paso $idx falló: $*"
+			return $st
+		fi
+	}
+
+	run_ok() { local idx="$1"; S_EMO[idx]="${SPIN_FRAMES[1]}"; render; sleep 0.15; S_EMO[idx]="$EMO_OK"; render; }
+
+	# ---- Inputs ----
+	local SRC_URL REPO_DESC COURSE_NAME COURSE_URL
+	SRC_URL="${1-}"; REPO_DESC="${2-}"; COURSE_NAME="${3-}"; COURSE_URL="${4-}"
+
+	_cc_ask SRC_URL     "URL del repo origen (SSH)" "git@github.com:epicweb-dev/advanced-mcp-features.git"
+	_cc_ask REPO_DESC   "Descripción para el repo nuevo" "EpicAI Advanced MCP Features"
+	_cc_ask COURSE_NAME "Nombre del curso" "Advanced MCP Features"
+	_cc_ask COURSE_URL  "URL del curso" "https://www.epicai.pro/workshops/day-3-4-advanced-mcp-features"
+
+	local REPO_NAME CODE_DIR GH_USER DEST_SSH
+	REPO_NAME="${SRC_URL:t:r}"                 # zsh: basename sin .git
+	CODE_DIR="${CODE_DIR:-$HOME/code}"
+	mkdir -p -- "$CODE_DIR"
+
+	_cc_require_cmd gh || return 1
+	_cc_require_cmd git || return 1
+	_cc_require_cmd sed || return 1
+	_cc_require_cmd npm || return 1
+
+	GH_USER="$(gh api user -q .login 2>/dev/null || true)"
+	[[ -n "$GH_USER" ]] || { echo "Autentícate: gh auth login"; return 1; }
+	DEST_SSH="git@github.com:${GH_USER}/${REPO_NAME}.git"
+
+	# Pantalla inicial
 	render
 
+	# 1) Crear repo (idempotente)
 	if gh repo view "${GH_USER}/${REPO_NAME}" >/dev/null 2>&1; then
-		run_step_inline_ok 0
+		run_ok 1
 	else
-		run_step 0 "gh repo create '${GH_USER}/${REPO_NAME}' --public --description \"${REPO_DESC}\"" || return 1
+		run_step 1 "gh repo create '${GH_USER}/${REPO_NAME}' --public --description \"${REPO_DESC}\"" || return $?
 	fi
 
-	run_step 1 "cd '$CODE_DIR'" || return 1
+	# 2) cd code
+	run_step 2 "cd '$CODE_DIR'" || return $?
 
-	if [ -d "$CODE_DIR/$REPO_NAME/.git" ]; then
-		run_step_inline_ok 2
+	# 3) clonar
+	if [[ -d "$CODE_DIR/$REPO_NAME/.git" ]]; then
+		run_ok 3
 	else
-		run_step 2 "git clone '$SRC_URL' '$REPO_NAME'" || return 1
+		run_step 3 "git clone '$SRC_URL' '$REPO_NAME'" || return $?
 	fi
 
-	run_step 3 "cd '$CODE_DIR/$REPO_NAME'" || return 1
+	# 4) entrar repo
+	run_step 4 "cd '$CODE_DIR/$REPO_NAME'" || return $?
 
+	# 5) setup (best-effort)
 	( npm run setup >/dev/null 2>&1 ) &
-	spin_until_done 4 $!
-	S_EMO[4]="✅"; render
+	spin_until_done 5 $!
+	S_EMO[5]="$EMO_OK"; render
 
-	run_step 5 "git remote set-url origin '$DEST_SSH' || git remote add origin '$DEST_SSH'" || return 1
+	# 6) remoto
+	run_step 6 "git remote set-url origin '$DEST_SSH' || git remote add origin '$DEST_SSH'" || return $?
 
-	run_step 6 "rm -rf .github || true" || return 1
+	# 7) limpiar .github
+	run_step 7 "rm -rf .github || true" || return $?
 
-	if [ -f ".gitignore" ]; then
-		run_step 7 "sed -i '' '/\/playground/d' .gitignore || true" || return 1
+	# 8) editar .gitignore
+	if [[ -f .gitignore ]]; then
+		run_step 8 "sed -i '' '/\/playground/d' .gitignore || true" || return $?
 	else
-		run_step_inline_ok 7
+		run_ok 8
 	fi
 
+	# 9) prepender README
 	(
-		TMP="$(mktemp)"
+		local TMP; TMP="$(mktemp)"
 		cat > "$TMP" <<EOF
 > ## 🚨 Important Notice
 >
@@ -374,18 +395,18 @@ gcc_func() {
 >
 > **Note:** This is not an official fork or a maintained derivative of the
 > original project.
-
 EOF
-		if [ -f README.md ]; then
+		if [[ -f README.md ]]; then
 			cat "$TMP" README.md > "${TMP}.all" && mv "${TMP}.all" README.md
 		else
 			mv "$TMP" README.md
 		fi
 	) &
-	spin_until_done 8 $!
-	[ $? -eq 0 ] && S_EMO[8]="✅" || { S_EMO[8]="❌"; render; echo "Fallo al escribir README"; return 1; }
+	spin_until_done 9 $!
+	(( $? == 0 )) && S_EMO[9]="$EMO_OK" || { S_EMO[9]="$EMO_ERR"; render; echo "Fallo al escribir README"; return 1; }
 	render
 
+	# 10) commit/push
 	(
 		git add -A || true
 		if git diff --cached --quiet; then
@@ -393,26 +414,28 @@ EOF
 		else
 			git commit -m 'Config' || true
 			git push -u origin main || {
-				CUR_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-				[ "$CUR_BRANCH" = "main" ] || git branch -M main || true
+				local CUR_BRANCH; CUR_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+				[[ "$CUR_BRANCH" == "main" ]] || git branch -M main || true
 				git push -u origin main || true
 			}
 		fi
 	) &
-	spin_until_done 9 $!
-	[ $? -eq 0 ] && S_EMO[9]="✅" || { S_EMO[9]="❌"; render; echo "Fallo el push"; return 1; }
+	spin_until_done 10 $!
+	(( $? == 0 )) && S_EMO[10]="$EMO_OK" || { S_EMO[10]="$EMO_ERR"; render; echo "Fallo el push"; return 1; }
 	render
 
-	( if command -v cursor >/dev/null 2>&1; then cursor .; fi ) >/dev/null 2>&1 &
-	spin_until_done 10 $!
-	S_EMO[10]="✅"; render
-
-	( if npm run -s | grep -qE ' dev$'; then npm run dev; fi ) >/dev/null 2>&1 &
+	# 11) Cursor (best-effort)
+	( command -v cursor >/dev/null 2>&1 && cursor . ) >/dev/null 2>&1 &
 	spin_until_done 11 $!
-	S_EMO[11]="✅"; render
+	S_EMO[11]="$EMO_OK"; render
 
-	echo
-	echo "Listo, pues. Repo: ${GH_USER}/${REPO_NAME}"
+	# 12) dev (best-effort)
+	( npm run -s | grep -qE ' dev$' && npm run dev ) >/dev/null 2>&1 &
+	spin_until_done 12 $!
+	S_EMO[12]="$EMO_OK"; render
+
+	print -r -- ""
+	print -r -- "Listo, mi pana. Repo: ${GH_USER}/${REPO_NAME}"
 	return 0
 }
 
