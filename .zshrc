@@ -244,10 +244,10 @@ _cc_ask() {
 	__val="$(_cc_getvar "$__name")"
 	if [[ -z "$__val" ]]; then
 		if [[ -n "$__def" ]]; then
-			read -r -p "$__prompt [$__def]: " __val
+			read -r "__val?$__prompt [$__def]: "
 			[[ -z "$__val" ]] && __val="$__def"
 		else
-			read -r -p "$__prompt: " __val
+			read -r "__val?$__prompt: "
 		fi
 	fi
 	typeset -g "$__name=$__val"
