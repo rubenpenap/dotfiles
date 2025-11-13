@@ -54,7 +54,7 @@ curl -L -o ~/Library/Fonts/MesloLGS_NF_Bold_Italic.ttf "https://github.com/romka
 pnpm add -g typescript
 
 echo "installing apps with brew --cask"
-brew install --cask chatgpt chatgpt-atlas cursor dash discord figma raycast firefox github google-chrome hiddenbar itsycal keepingyouawake keka linear-linear loom maccy microsoft-auto-update microsoft-teams steam visual-studio-code warp whatsapp workflowy zoom
+brew install --cask chatgpt chatgpt-atlas cursor dash discord docker-desktop figma raycast firefox github google-chrome hiddenbar itsycal keepingyouawake keka linear-linear loom maccy microsoft-auto-update microsoft-teams steam visual-studio-code warp whatsapp workflowy zoom
 
 # Launches the Battle.net setup to complete installation
 open /opt/homebrew/Caskroom/battle-net/1.18.10.3141/Battle.net-Setup.app
