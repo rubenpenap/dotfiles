@@ -211,7 +211,7 @@ function up () {
   fi
 
   echo "Upgrading casks..."
-  if ! brew upgrade --cask battle-net bruno chatgpt chatgpt-atlas claude-code clickup cursor dash discord docker-desktop duet figma firefox github google-chrome hiddenbar itsycal keepingyouawake keka linear-linear loom maccy microsoft-auto-update microsoft-outlook microsoft-teams raycast steam visual-studio-code warp whatsapp workflowy zoom; then
+  if ! brew upgrade --cask bruno chatgpt chatgpt-atlas claude-code clickup cursor dash discord docker-desktop duet figma firefox github google-chrome hiddenbar itsycal keepingyouawake keka linear-linear loom maccy microsoft-auto-update microsoft-outlook microsoft-teams raycast steam visual-studio-code warp whatsapp workflowy zoom; then
     echo "Error during brew cask upgrade"
     return 1
   fi
