@@ -36,7 +36,8 @@ echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >>/Users/repp.dev/.zprofile
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 echo "brew installing stuff"
-brew install git node pnpm plantuml graphviz nvm gh gifski sqlite
+brew install gh gifski git git-filter-repo graphviz node nvm plantuml pnpm
+
 
 mkdir ~/.nvm
 
