@@ -34,3 +34,8 @@ Session.vim
 
 # eslint
 .eslintcache
+
+# Agents Skills
+docs
+.agents
+AGENTS.md

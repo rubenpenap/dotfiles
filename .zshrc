@@ -1,15 +1,13 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
 #!/bin/bash
+
+export SCHEMA_NAME=template
+export DATABASE_USERNAME=repp.dev
+export DATABASE_PASSWORD=password
+export DATABASE_URL=jdbc:postgresql://127.0.0.1:5432/template?currentSchema=template
 
 # ohMyZsh
 export ZSH="$HOME/.oh-my-zsh"
-ZSH_THEME="powerlevel10k/powerlevel10k"
+# ZSH_THEME="powerlevel10k/powerlevel10k"
 
 export TERM=xterm-256color
 export CLICOLOR=1
@@ -62,7 +60,7 @@ alias pg="echo 'Pinging Google' && ping www.google.com";
 alias zsh="cursor ~/.zshrc";
 alias reload="source ~/.zshrc";
 alias de="cd ~/Desktop && ls";
-alias co="cd ~/code && ls";
+alias co="cd ~/Developer && ls";
 alias gc="gc_func";
 alias gcc="gcc_func";
 alias dr="dr_func";
@@ -85,7 +83,7 @@ function gc_func () {
     echo "Usage: gc <repository-url>"
     return 1
   fi
-  cd ~/code || { echo "Failed to navigate to ~/code"; return 1; }
+  cd ~/Developer || { echo "Failed to navigate to ~/Developer"; return 1; }
   repo_url="$1"
   repo_name=$(basename "$repo_url" .git)
   if [ -d "$repo_name" ]; then
@@ -211,7 +209,7 @@ function up () {
   fi
 
   echo "Upgrading casks..."
-  if ! brew upgrade --cask bruno chatgpt chatgpt-atlas claude-code clickup codex codex-app cursor dash discord docker-desktop duet figma firefox github google-chrome hiddenbar itsycal keepingyouawake keka linear-linear loom maccy microsoft-auto-update microsoft-outlook microsoft-teams raycast steam warp whatsapp workflowy zoom; then
+  if ! brew upgrade --cask bruno, chatgpt, claude-code, clickup, codex, codex-app, cursor, dash, discord, docker-desktop, figma, firefox, github, google-chrome, hiddenbar, itsycal, keepingyouawake, keka, linear-linear, loom, maccy, microsoft-auto-update, microsoft-outlook, microsoft-teams, raycast, warp, whatsapp, workflowy, zoom; then
     echo "Error during brew cask upgrade"
     return 1
   fi
@@ -265,7 +263,7 @@ function gcc_func() {
 	# Labels (orden de pasos)
 	local -a S_LABELS=(
 		"📦 Creando repositorio en GitHub"
-		"📁 Navegando a carpeta code"
+		"📁 Navegando a carpeta Developer"
 		"🧬 Clonar repositorio"
 		"📂 Entrar al repo"
 		"⚙️  Setup (npm run setup)"
@@ -344,7 +342,7 @@ function gcc_func() {
 
 	local REPO_NAME CODE_DIR GH_USER DEST_SSH
 	REPO_NAME="${SRC_URL:t:r}"                 # zsh: basename sin .git
-	CODE_DIR="${CODE_DIR:-$HOME/code}"
+	CODE_DIR="${CODE_DIR:-$HOME/Developer}"
 	mkdir -p -- "$CODE_DIR"
 
 	_cc_require_cmd gh || return 1
@@ -439,20 +437,11 @@ EOF
 	return 0
 }
 
-# zsh auto autocomplete
-autoload -Uz compinit && compinit
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
-
-source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
-
 PATH=~/.console-ninja/.bin:$PATH
 
 export NVM_DIR="$HOME/.nvm"
   [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
   [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # pnpm
 export PNPM_HOME="/Users/repp.dev/Library/pnpm"
@@ -461,3 +450,7 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
