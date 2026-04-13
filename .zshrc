@@ -163,11 +163,9 @@ function quit () {
 }
 
 function passwordGenerator() {
-  local venv_path=".venv/bin/activate"
-  local script_path="./gp.py"
-  local current_dir=$(pwd)
-
-  cd ~/
+  local venv_path="$HOME/.venv/bin/activate"
+  local dotfiles_dir="$HOME/dotfiles"
+  local script_path="$dotfiles_dir/scripts/pg.py"
 
   if [[ ! -f "$venv_path" ]]; then
     echo "Error: No se encontró el entorno virtual en $venv_path"
@@ -182,17 +180,11 @@ function passwordGenerator() {
   # Activar entorno virtual
   source "$venv_path"
 
-  # Ejecutar script con o sin flag
-  if [[ "$1" == "-s" || "$1" == "--special" ]]; then
-    python "$script_path" "$1"
-  else
-    python "$script_path"
-  fi
+  # Ejecutar script forwarding todos los argumentos
+  python "$script_path" "$@"
 
   # Desactivar entorno virtual
   deactivate
-
-  cd "$current_dir"
 }
 
 function up () {
@@ -209,7 +201,7 @@ function up () {
   fi
 
   echo "Upgrading casks..."
-  if ! brew upgrade --cask bruno, chatgpt, claude-code, clickup, codex, codex-app, cursor, dash, discord, docker-desktop, figma, firefox, github, google-chrome, hiddenbar, itsycal, keepingyouawake, keka, linear-linear, loom, maccy, microsoft-auto-update, microsoft-outlook, microsoft-teams, raycast, warp, whatsapp, workflowy, zoom; then
+  if ! brew upgrade --cask bruno chatgpt claude-code clickup codex codex-app cursor dash discord docker-desktop figma firefox github google-chrome hiddenbar itsycal keepingyouawake keka linear-linear loom maccy microsoft-auto-update microsoft-outlook microsoft-teams raycast warp whatsapp workflowy zoom; then
     echo "Error during brew cask upgrade"
     return 1
   fi
