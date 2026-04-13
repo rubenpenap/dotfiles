@@ -5,9 +5,10 @@ from __future__ import annotations
 import argparse
 import secrets
 import string
+import subprocess
 import sys
 
-DEFAULT_LENGTH = 20
+DEFAULT_LENGTH = 30
 SPECIAL_CHARACTERS = "!@#$%^&*()-_=+[]{};:,.?/|~"
 
 
@@ -62,16 +63,28 @@ def generate_password(length: int, include_special: bool) -> str:
     return "".join(password_chars)
 
 
+def copy_to_clipboard(password: str) -> None:
+    try:
+        subprocess.run(["pbcopy"], input=password, text=True, check=True)
+    except FileNotFoundError as error:
+        raise RuntimeError("pbcopy no está disponible en este sistema") from error
+    except subprocess.CalledProcessError as error:
+        raise RuntimeError("no se pudo copiar la contraseña al clipboard") from error
+
+
 def main() -> int:
     args = parse_args()
 
     try:
         password = generate_password(args.length, args.special)
+        copy_to_clipboard(password)
     except ValueError as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
+    except RuntimeError as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
 
-    print(password)
     return 0
 
 
