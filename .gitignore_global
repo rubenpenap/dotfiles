@@ -1,41 +1,29 @@
-# Mac
+# OS metadata
 .DS_Store
 
-# VSCode
+# Editors
 .vscode/
-
-# WebStorm
 .idea/
-
-# npm
-npm-debug.log
-
-# yarn
-yarn-error.log
-
-# VIM
+.history/
+*.swp
+*~
 *.un~
+.lvimrc
 Session.vim
 .netrwhist
-*~
-*.swp
-.lvimrc
 
-# localhistory
-.history
+# Package manager logs and caches
+npm-debug.log
+yarn-error.log
+.eslintcache
+.ruff_cache/
 
-# PayPal project specific stuff
+# Personal/project-local noise
 .nvmrc
 .agignore
-
-# Over-arching stuff
 *.ignored/
 *.ignored.*
 
-# eslint
-.eslintcache
-
-# Agents Skills
-docs
-.agents
+# Agent and AI workspace files
+.agents/
 AGENTS.md
