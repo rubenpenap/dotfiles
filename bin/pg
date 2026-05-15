@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Legacy compatibility wrapper for the password generator CLI."""
 
 import sys
 from pathlib import Path
